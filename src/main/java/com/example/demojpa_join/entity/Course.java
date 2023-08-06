@@ -2,11 +2,15 @@ package com.example.demojpa_join.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "course")
 public class Course {
@@ -18,8 +22,9 @@ public class Course {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    @JoinColumn( name = "course_id")
-    private List<Teacher> teachers;
+    @OneToMany(mappedBy="course")
+    //@OneToMany(cascade = CascadeType.ALL)
+    //@JoinColumn( name = "course_id")
+    private List<Teacher> teachers = new ArrayList<>();
 
 }

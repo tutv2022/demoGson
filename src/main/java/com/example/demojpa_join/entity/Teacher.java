@@ -2,9 +2,12 @@ package com.example.demojpa_join.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "teacher")
 public class Teacher {
@@ -22,7 +25,7 @@ public class Teacher {
     @Column(name = "status")
     private Integer status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL, optional = false)
     @JoinColumn( name = "course_id")
     Course course;
 
