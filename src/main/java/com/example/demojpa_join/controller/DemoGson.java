@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
+import org.checkerframework.checker.units.qual.C;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.google.gson.Gson;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -36,7 +38,8 @@ public class DemoGson {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-        Course course15 =  courseRepository.findById(15).get();
+        //Course course15 =  courseRepository.findById(15).get();
+        Course course15 =  new Course();
         Course course16 =  courseRepository.findById(16).get();
 
 
@@ -57,7 +60,43 @@ public class DemoGson {
         Map<String, Object> secondMap = g.fromJson(json16, mapType);
 
         MapDifference<String, Object> difference = Maps.difference(firstMap, secondMap);
-        System.out.println(difference);
+       // Map<String, MapDifference.ValueDifference<Object>> entireDiff = difference.entriesDiffering();
+
+        //Map<String, Object> leftDiff = difference.entriesOnlyOnLeft();
+        Map<String, Object> leftDiff = new HashMap<>();
+        Map<String, Object> rightDiff = new HashMap<>();
+
+        if (!difference.areEqual()) {
+            if (difference.entriesOnlyOnLeft().size() > 0) {
+                System.out.println("Entries only on the left\n--------------------------");
+                difference.entriesOnlyOnLeft().forEach((key, value) -> System.out.println(key + ": " + value));
+            }
+
+            if (difference.entriesOnlyOnRight().size() > 0) {
+                System.out.println("\n\nEntries only on the right\n--------------------------");
+                difference.entriesOnlyOnRight().forEach((key, value) -> System.out.println(key + ": " + value));
+            }
+
+            if (difference.entriesDiffering().size() > 0) {
+                System.out.println("\n\nEntries differing\n--------------------------");
+                difference.entriesDiffering().forEach((key, value) -> {
+
+                    System.out.println(key + ": " + value.leftValue() + " - " + value.rightValue());
+                    leftDiff.put(key, value.leftValue() );
+                    rightDiff.put(key, value.rightValue() );
+
+                });
+            }
+        }
+
+
+
+        String json15X = mapper.writeValueAsString(leftDiff);
+
+        String json16X = mapper.writeValueAsString(rightDiff);
+
+        System.out.println(json15X);
+        System.out.println(json16X);
 
     }
 }
