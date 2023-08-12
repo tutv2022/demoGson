@@ -1,6 +1,7 @@
 package com.example.demojpa_join.controller;
 
 import com.example.demojpa_join.entity.Course;
+import com.example.demojpa_join.entity.Coursedetail;
 import com.example.demojpa_join.entity.Teacher;
 import com.example.demojpa_join.model.CourseOutputDTO;
 import com.example.demojpa_join.model.TeacherDTO;
@@ -8,9 +9,11 @@ import com.example.demojpa_join.model.TeacherOutDTO;
 import com.example.demojpa_join.repository.CourseRepository;
 import com.example.demojpa_join.repository.TeacherRepository;
 import com.example.demojpa_join.service.TestService;
+import jakarta.persistence.criteria.*;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -45,15 +48,45 @@ public class DemoJoin {
        return modelMapper.map(teacher,TeacherOutDTO.class);
 
     }
+
+    private Specification<Course> courseSpecification(){
+        return (root, query, criteriaBuilder)-> {
+
+            Subquery<Integer> subQuery = query.subquery(Integer.class);
+            Root<Coursedetail> subQueryRoot = subQuery.from(Coursedetail.class);
+
+            Predicate courseDetailPredicate = criteriaBuilder.greaterThanOrEqualTo(
+                    subQueryRoot.get("price"), 4000
+            );
+
+            subQuery.select(subQueryRoot.get("id")).where(
+                    criteriaBuilder.or(
+                            criteriaBuilder.equal(subQueryRoot.get("price"), 300),
+                            criteriaBuilder.and(
+                                    courseDetailPredicate,
+                                    criteriaBuilder.lessThan(
+                                            subQueryRoot.get("price"), 5000 ) ) )
+            );
+
+            return criteriaBuilder.and(root.get("courseDetailId").in(subQuery));
+        };
+    }
+
     @GetMapping("/view2")
     public CourseOutputDTO view2(@RequestParam Integer id) {
 
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-        Course course =  courseRepository.findById(id).get();
+        //Course course =  courseRepository.findById(id).get();
 
-        CourseOutputDTO courseOutputDTO = modelMapper.map(course, CourseOutputDTO.class);
+        Specification<Course> courseSpec = courseSpecification();
+
+        List<Course> courses = courseRepository.findAll(courseSpec);
+
+        CourseOutputDTO courseOutputDTO = modelMapper.map(courses.get(0), CourseOutputDTO.class);
+
+
 
         return courseOutputDTO;
 

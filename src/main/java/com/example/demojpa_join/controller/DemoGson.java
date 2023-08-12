@@ -4,6 +4,7 @@ import com.example.demojpa_join.entity.Course;
 import com.example.demojpa_join.model.CourseOutputDTO;
 import com.example.demojpa_join.repository.CourseRepository;
 import com.example.demojpa_join.repository.TeacherRepository;
+import com.example.demojpa_join.service.ServiceCache;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -31,9 +32,12 @@ public class DemoGson {
     TeacherRepository teacherRepository;
 
 
+
     @GetMapping("/diff")
     public void testDiff() throws JsonProcessingException {
 
+        ServiceCache serviceCache = ServiceCache.getInstance();
+        serviceCache.getCaching("Test");
 
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);

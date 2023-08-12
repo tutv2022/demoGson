@@ -22,6 +22,9 @@ public class Course {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "course_detail_id")
+    private Integer courseDetailId;
+
     @OneToMany(mappedBy="course")
     //@OneToMany(cascade = CascadeType.ALL)
     //@JoinColumn( name = "course_id")
